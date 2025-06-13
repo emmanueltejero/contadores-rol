@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Contadores de Rol</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #2b2b2b;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #ffffff;
+    }
+    #addCounter {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    #addCounter:hover {
+      background-color: #45a049;
+    }
+    .contador {
+      border: 1px solid #555;
+      padding: 15px;
+      margin: 20px auto;
+      border-radius: 8px;
+      max-width: 500px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+    .contador:hover {
+      transform: scale(1.01);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.9);
+    }
+    .contador strong {
+      font-size: 18px;
+      color: #ffeb3b;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .contador input[type="number"] {
+      width: 80px;
+      padding: 5px;
+      font-size: 16px;
+      margin-top: 10px;
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #777;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .contador button {
+      margin: 5px 3px;
+      padding: 6px 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+    }
+    .contador button:hover {
+      opacity: 0.9;
+    }
+    .contador button.positivo {
+      background-color: #4CAF50;
+    }
+    .contador button.negativo {
+      background-color: #f44336;
+    }
+    .contador button.editar {
+      background-color: #607d8b;
+    }
+    .contador button.orden {
+      background-color: #9c27b0;
+    }
+    .contador button.reset {
+      background-color: #ff9800;
+    }
+    .contador button.mod-positivo {
+      background-color: #388e3c;
+    }
+    .contador button.mod-negativo {
+      background-color: #d32f2f;
+    }
+    .modificadores {
+      margin-top: 10px;
+    }
+    .modificadores span,
+    .modificadores button {
+      display: inline-block;
+      margin: 2px;
+    }
+    .contador .grupo-controles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .fondo-selector {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Contadores de Rol</h1>
+  <button id="addCounter">➕ Añadir contador</button>
+  <div id="counters"></div>
+
+  <script>
+    const app = {
+      contadores: [],
+
+      init() {
+        this.load();
+        this.render();
+        document.getElementById('addCounter').addEventListener('click', () => this.addCounter());
+      },
+
+      save() {
+        localStorage.setItem('contadoresRol', JSON.stringify(this.contadores));
+      },
+
+      load() {
+        const data = localStorage.getItem('contadoresRol');
+        if (data) {
+          this.contadores = JSON.parse(data);
+        }
+      },
+
+      addCounter() {
+        const nombre = prompt('Nombre del contador:');
+        if (!nombre) return;
+        const nuevoContador = {
+          id: Date.now(),
+          nombre,
+          valor: 0,
+          modificadores: [1, -1],
+          fondo: '#3c3c3c'
+        };
+        this.contadores.push(nuevoContador);
+        this.save();
+        this.render();
+      },
+
+      moverContador(index, direccion) {
+        const nuevoIndex = index + direccion;
+        if (nuevoIndex < 0 || nuevoIndex >= this.contadores.length) return;
+        const temp = this.contadores[index];
+        this.contadores[index] = this.contadores[nuevoIndex];
+        this.contadores[nuevoIndex] = temp;
+        this.save();
+        this.render();
+      },
+
+      eliminarModificador(contador) {
+        const seleccion = prompt(
+          'Selecciona los modificadores a eliminar (separa los números con comas):\n' +
+          contador.modificadores.map((m, i) => `${i + 1}: ${m}`).join('\n')
+        );
+        if (!seleccion) return;
+        const indices = seleccion.split(',').map(x => parseInt(x.trim()) - 1).filter(i => !isNaN(i));
+        const únicos = [...new Set(indices)].sort((a, b) => b - a);
+        únicos.forEach(i => {
+          if (i >= 0 && i < contador.modificadores.length) {
+            contador.modificadores.splice(i, 1);
+          }
+        });
+        this.save();
+        this.render();
+      },
+
+      render() {
+        const container = document.getElementById('counters');
+        container.innerHTML = '';
+        this.contadores.forEach((contador, index) => {
+          const div = document.createElement('div');
+          div.className = 'contador';
+          div.style.backgroundColor = contador.fondo || '#3c3c3c';
+
+          const colorInput = document.createElement('input');
+          colorInput.type = 'color';
+          colorInput.className = 'fondo-selector';
+          colorInput.value = contador.fondo || '#3c3c3c';
+          colorInput.oninput = () => {
+            contador.fondo = colorInput.value;
+            this.save();
+            this.render();
+          };
+          div.appendChild(colorInput);
+
+          const nombre = document.createElement('strong');
+          nombre.textContent = contador.nombre;
+
+          const btnEditarNombre = document.createElement('button');
+          btnEditarNombre.textContent = '✏️ Editar nombre';
+          btnEditarNombre.className = 'editar';
+          btnEditarNombre.onclick = () => {
+            const nuevoNombre = prompt('Nuevo nombre:', contador.nombre);
+            if (nuevoNombre) {
+              contador.nombre = nuevoNombre;
+              this.save();
+              this.render();
+            }
+          };
+
+          const valorInput = document.createElement('input');
+          valorInput.type = 'number';
+          valorInput.value = contador.valor;
+          valorInput.onchange = () => {
+            contador.valor = parseInt(valorInput.value) || 0;
+            this.save();
+          };
+
+          const valorDisplay = document.createElement('div');
+          valorDisplay.appendChild(valorInput);
+
+          const modificadoresDiv = document.createElement('div');
+          modificadoresDiv.className = 'modificadores';
+
+          contador.modificadores.forEach(mod => {
+            const btn = document.createElement('button');
+            btn.textContent = (mod > 0 ? '+' : '') + mod;
+            btn.className = mod > 0 ? 'mod-positivo' : 'mod-negativo';
+            btn.onclick = () => {
+              contador.valor += mod;
+              this.save();
+              this.render();
+            };
+            modificadoresDiv.appendChild(btn);
+          });
+
+          const addModBtn = document.createElement('button');
+          addModBtn.textContent = '➕ Añadir modificador';
+          addModBtn.className = 'positivo';
+          addModBtn.onclick = () => {
+            const nuevoMod = prompt('Introduce un modificador (ej: +2, -3):');
+            if (!nuevoMod) return;
+            const valorMod = parseInt(nuevoMod);
+            if (!isNaN(valorMod)) {
+              contador.modificadores.push(valorMod);
+              this.save();
+              this.render();
+            } else {
+              alert('Valor inválido. Usa números enteros, con signo si quieres.');
+            }
+          };
+
+          const deleteModBtn = document.createElement('button');
+          deleteModBtn.textContent = '🗑️ Eliminar modificador';
+          deleteModBtn.className = 'negativo';
+          deleteModBtn.onclick = () => {
+            this.eliminarModificador(contador);
+          };
+
+          const btnReset = document.createElement('button');
+          btnReset.textContent = '🔄 Resetear';
+          btnReset.className = 'reset';
+          btnReset.onclick = () => {
+            if (confirm(`¿Seguro que quieres resetear el contador "${contador.nombre}" a su estado original?`)) {
+              contador.valor = 0;
+              contador.modificadores = [1, -1];
+              contador.fondo = '#3c3c3c';
+              this.save();
+              this.render();
+            }
+          };
+
+          const btnEliminar = document.createElement('button');
+          btnEliminar.textContent = '🗑️ Eliminar';
+          btnEliminar.className = 'negativo';
+          btnEliminar.onclick = () => {
+            if (confirm(`¿Estás seguro que quieres eliminar el contador "${contador.nombre}"?`)) {
+              this.contadores = this.contadores.filter(c => c.id !== contador.id);
+              this.save();
+              this.render();
+            }
+          };
+
+          const btnSubir = document.createElement('button');
+          btnSubir.textContent = '↑';
+          btnSubir.className = 'orden';
+          btnSubir.onclick = () => this.moverContador(index, -1);
+
+          const btnBajar = document.createElement('button');
+          btnBajar.textContent = '↓';
+          btnBajar.className = 'orden';
+          btnBajar.onclick = () => this.moverContador(index, 1);
+
+          div.appendChild(nombre);
+          div.appendChild(document.createTextNode(' '));
+          div.appendChild(btnEditarNombre);
+          div.appendChild(document.createElement('br'));
+          div.appendChild(valorDisplay);
+          div.appendChild(modificadoresDiv);
+          div.appendChild(addModBtn);
+          div.appendChild(deleteModBtn);
+          div.appendChild(btnReset);
+          div.appendChild(btnEliminar);
+          div.appendChild(btnSubir);
+          div.appendChild(btnBajar);
+
+          container.appendChild(div);
+        });
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => app.init());
+  </script>
+</body>
+</html>
