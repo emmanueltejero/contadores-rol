@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contadores de Rol</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -12,6 +13,7 @@
       background-color: #2b2b2b;
       color: #e0e0e0;
       padding: 20px;
+      margin: 0;
     }
     h1 {
       text-align: center;
@@ -36,10 +38,12 @@
       padding: 15px;
       margin: 20px auto;
       border-radius: 8px;
-      max-width: 500px;
+      max-width: 100%;
+      width: 100%;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       position: relative;
+      box-sizing: border-box;
     }
     .contador:hover {
       transform: scale(1.01);
@@ -52,7 +56,7 @@
       margin-bottom: 8px;
     }
     .contador input[type="number"] {
-      width: 80px;
+      width: 100%;
       padding: 5px;
       font-size: 16px;
       margin-top: 10px;
@@ -61,6 +65,7 @@
       border: 1px solid #777;
       border-radius: 4px;
       text-align: center;
+      box-sizing: border-box;
     }
     .contador button {
       margin: 5px 3px;
