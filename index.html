@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Contadores de Rol</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -118,6 +121,17 @@
   <button id="addCounter">➕ Añadir contador</button>
   <div id="counters"></div>
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js').then(function(registration) {
+          console.log('ServiceWorker registrado con éxito:', registration.scope);
+        }, function(err) {
+          console.log('Error al registrar el ServiceWorker:', err);
+        });
+      });
+    }
+  </script>
   <script>
     const app = {
       contadores: [],
